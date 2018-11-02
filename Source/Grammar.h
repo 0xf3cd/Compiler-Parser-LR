@@ -22,13 +22,6 @@ using namespace std;
 typedef set<Symbol> FIRST_SET; 
 typedef set<Symbol> FOLLOW_SET;
 
-//定义起始变元为 S
-#define START_ARG "S"
-
-//定义源码终结符及种别码
-#define END_TER "#"
-#define END_TYPE 0
-
 /* Grammar 文法的类
  */
 class Grammar {
@@ -43,6 +36,19 @@ private:
     map<Symbol, FIRST_SET> symbol_first; //(变元, FIRST集) 键值对
     map<Production, FIRST_SET> first; //(产生式, FIRST集) 键值对
     map<Symbol, FOLLOW_SET> follow; //(变元, FOLLOW集) 键值对
+
+    //定义起始变元为 S
+    string START_ARG;
+
+    //定义源码终结符及种别码
+    string END_TER;
+    int END_TYPE;
+
+    //定义项目中间的点符
+    string ITEM_DOT;
+    int ITEM_DOT_TYPE;
+
+    Symbol ERROR;
 
     /* readInArguments 函数: 读入文件中的变元
 	 * 在函数中完成对 argument_amount 和 arguments 集合的修改
@@ -118,14 +124,23 @@ public:
 	 */
     Grammar();
 
-    /* setStartSymbol 函数: 设定起始变元
-     * 默认为 S
-     */
-    void setStartSymbol(string name);
-
-    /* 析构函数: 清空集合
+    /* setStartArgument 函数: 设定文法的起始变元
+     * @param arg: 起始变元名
 	 */
-    //~Grammar();
+    void setStartArgument(string arg);
+
+    /* setEndTerminal 函数: 设定源文件的终结字符
+     * @param ter: 字符名
+     * @param type: 编号
+	 */
+    void setEndTerminal(string ter, int type);
+
+    /* setItemDot 函数: 设定源文件的终结字符
+     * @param dot: 字符名
+     * @param type: 编号
+	 */
+    void setItemDot(string dot, int type);
+
 
     /* analyzeGrammar 函数: 读入文件中变元、终结符和产生式
      * @param direcory: 文件地址
@@ -202,4 +217,8 @@ public:
     /* getEndSymbol 函数: 返回起始变元
      */
     Symbol getStartSymbol();
+
+    /* getDot 函数: 返回点符
+     */
+    Symbol getDot();
 };

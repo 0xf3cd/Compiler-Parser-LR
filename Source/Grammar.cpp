@@ -107,10 +107,12 @@ void Grammar::generateSymbolFirst() {
     Symbol left, right; //分别表示产生式左部和右部的符号
     
     //EPSILON 为空，单独拎出来成一个变量，方便后面的比较
-    const Symbol EPSILON = findArgument("ε");
+    const Symbol EPSILON = findTerminal("ε");//如果返回 ERROR 说明终结符中没有 空
     set<Symbol> EPSILON_SET;
     //EPSILON_SET 为仅有 EPSILON 的集合，拎出来方便后面集合的并和差运算
-    EPSILON_SET.insert(EPSILON);
+    if(EPSILON != ERROR) { //
+        EPSILON_SET.insert(EPSILON);
+    }
 
     set<Symbol> d_temp; //用户稍后集合差运算
     set<Symbol> u_temp; //用户稍后的集合并运算
@@ -191,10 +193,12 @@ void Grammar::generateFirst() {
     Symbol left, right; //分别表示产生式左部和右部的符号
 
     //EPSILON 为空，单独拎出来成一个变量，方便后面的比较
-    const Symbol EPSILON = findArgument("ε");
+    const Symbol EPSILON = findTerminal("ε");//如果返回 ERROR 说明终结符中没有 空
     set<Symbol> EPSILON_SET;
     //EPSILON_SET 为仅有 EPSILON 的集合，拎出来方便后面集合的并和差运算
-    EPSILON_SET.insert(EPSILON);
+    if(EPSILON != ERROR) { //
+        EPSILON_SET.insert(EPSILON);
+    }
 
     set<Symbol> d_temp; //用户稍后集合差运算
     set<Symbol> u_temp; //用户稍后的集合并运算
@@ -240,12 +244,15 @@ void Grammar::generateFollow() {
     vector<Symbol>::const_iterator it_right; //产生式右部符号的迭代器
     Symbol left, right; //分别表示产生式左部和右部的符号
     vector<Symbol>::const_reverse_iterator it_rev; //产生式右部的反向迭代器
-    
+
     //EPSILON 为空，单独拎出来成一个变量，方便后面的比较
-    const Symbol EPSILON = findTerminal("ε");
+    const Symbol EPSILON = findTerminal("ε");//如果返回 ERROR 说明终结符中没有 空
     set<Symbol> EPSILON_SET;
     //EPSILON_SET 为仅有 EPSILON 的集合，拎出来方便后面集合的并和差运算
-    EPSILON_SET.insert(EPSILON);
+    if(EPSILON != ERROR) { //
+        EPSILON_SET.insert(EPSILON);
+    }
+
 
     //起始变元
     const Symbol START = findArgument(START_ARG);
@@ -400,7 +407,7 @@ Symbol Grammar::findArgument(string input) {
             return to_return;
         }
     }
-    to_return = *it;
+    to_return = ERROR;
     return to_return; //如果没有找到则返回最后一个元素
 }
 
@@ -409,7 +416,7 @@ Symbol Grammar::findArgument(string input) {
  * @return: 对应终结符
  */
 Symbol Grammar::findTerminal(string input) {
-     set<Symbol>::iterator it;
+    set<Symbol>::iterator it;
     Symbol to_return;
     for(it = terminals.begin(); it != terminals.end(); it++) {
         if(*it == input) {
@@ -417,7 +424,7 @@ Symbol Grammar::findTerminal(string input) {
             return to_return;
         }
     }
-    to_return = *it;
+    to_return = ERROR;
     return to_return; //如果没有找到则返回最后一个元素
 }
 
@@ -428,20 +435,47 @@ Grammar::Grammar() {
     argument_amount = -1;
     terminal_amount = -1;
     production_amount = -1;
+
+    //定义起始变元为 S
+    START_ARG = "S";
+
+    //定义源码终结符及种别码
+    END_TER = "#";
+    END_TYPE = 0;
+
+    //定义项目中间的点符
+    ITEM_DOT = ".";
+    ITEM_DOT_TYPE = 30;
     //start_arg = Symbol(START_ARG);
+
+    ERROR.no = -1;
+    ERROR.name = "\0";
 }
 
-/* 析构函数: 清空集合
+/* setStartArgument 函数: 设定文法的起始变元
+ * @param arg: 起始变元名
  */
-// Grammar::~Grammar() {
-// }
+void Grammar::setStartArgument(string arg) {
+ START_ARG = arg;
+}
 
-/* setStartSymbol 函数: 设定起始变元
- * 默认为 S
+/* setEndTerminal 函数: 设定源文件的终结字符
+ * @param ter: 字符名
+ * @param type: 编号
  */
-// void Grammar::setStartSymbol(string name) {
-//     start_arg = name;
-// }
+void Grammar::setEndTerminal(string ter, int type) {
+    END_TER = ter;
+    END_TYPE = type;
+}
+
+/* setItemDot 函数: 设定源文件的终结字符
+ * @param dot: 字符名
+ * @param type: 编号
+ */
+void Grammar::setItemDot(string dot, int type) {
+    ITEM_DOT = dot;
+    ITEM_DOT_TYPE = type;
+}
 
 /* analyzeGrammar 函数: 读入文件中变元、终结符和产生式
  * @param direcory: 文件地址
@@ -467,6 +501,7 @@ bool Grammar::analyzeGrammar(string directory) {
         fin.close();
         return false;
     }
+
     generateSymbolFirst();
     generateFirst();
     generateFollow();
@@ -495,10 +530,12 @@ bool Grammar::isLL1() {
     set<FIRST_SET>::iterator it_FS1, it_FS2;
 
     //EPSILON 为空，单独拎出来成一个变量，方便后面的比较
-    const Symbol EPSILON = findTerminal("ε");
+    const Symbol EPSILON = getEpsilon();//如果返回 ERROR 说明终结符中没有 空
     set<Symbol> EPSILON_SET;
     //EPSILON_SET 为仅有 EPSILON 的集合，拎出来方便后面集合的并和差运算
-    EPSILON_SET.insert(EPSILON);
+    if(EPSILON != ERROR) { //
+        EPSILON_SET.insert(EPSILON);
+    }
 
     FIRST_SET i_temp; //用于之后的并操作
 
@@ -714,4 +751,13 @@ Symbol Grammar::getEndSymbol() {
  */
 Symbol Grammar::getStartSymbol() {
     return findArgument(START_ARG);
+}
+
+/* getDot 函数: 返回点符
+ */
+Symbol Grammar::getDot() {
+    Symbol dot;
+    dot.name = ITEM_DOT;
+    dot.no = ITEM_DOT_TYPE;
+    return dot;
 }
