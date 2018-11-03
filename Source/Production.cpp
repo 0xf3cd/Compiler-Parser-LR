@@ -23,7 +23,7 @@ bool Production::operator <(const Production &p) const {
     it1 = right.begin();
     it2 = p.right.begin();
 
-    return (left.name == p.left.name)? it1 -> name > it2 -> name: left.name < p.left.name;
+    return true;// (left.name == p.left.name)? it1 -> name > it2 -> name: left.name < p.left.name;
 }
 
 Production & Production::operator =(const Production &p) {

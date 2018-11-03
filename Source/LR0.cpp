@@ -38,13 +38,14 @@ void LR0::generateItems(Grammar &G) {
 
         size = (*it_p).right.size();
         for(i = 0; i <= size; i++) {
-            j = 0;
-            for(it_s = (*it_p).right.begin(); it_s != (*it_p).right.end(); it_s++) {
+            it_s = (*it_p).right.begin();
+            for(j = 0; j <= size; j++) {
                 if(j == i) {
                     new_item.right.push_back(DOT);
+                } else {
+                    new_item.right.push_back(*it_s);
+                    it_s++;
                 }
-                new_item.right.push_back(*it_s);
-                j++;
             }
             items.insert(new_item);
             new_item.right.clear();

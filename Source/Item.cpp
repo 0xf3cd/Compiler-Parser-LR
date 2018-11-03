@@ -23,7 +23,7 @@ bool Item::operator <(const Item &p) const {
     it1 = right.begin();
     it2 = p.right.begin();
 
-    return (left.name == p.left.name)? it1 -> name > it2 -> name: left.name < p.left.name;
+    return true;//(left.name == p.left.name)? it1 -> name > it2 -> name: left.name < p.left.name;
 }
 
 Item & Item::operator =(const Item &p) {
@@ -33,27 +33,35 @@ Item & Item::operator =(const Item &p) {
     return *this;
 }
 
-istream &operator >>(istream &fin, Item &p) {
-    string temp;
-
-    fin >> temp; //读入左部
-    p.left = Symbol(temp);
-
-    fin >> temp; //读入 ->
-
-    //接下来处理右部
-    p.right.clear();
-    while(true) {
-        fin >> temp;
-        if(temp == "$") {
-            break;
-        }
-
-        p.right.push_back(Symbol(temp));
+bool Item::operator ==(const Item &p) {
+    if(left == p.left && right == p.right) {
+        return true;
+    } else {
+        return false;
     }
-
-    return fin;
 }
+
+// istream &operator >>(istream &fin, Item &p) {
+//     string temp;
+
+//     fin >> temp; //读入左部
+//     p.left = Symbol(temp);
+
+//     fin >> temp; //读入 ->
+
+//     //接下来处理右部
+//     p.right.clear();
+//     while(true) {
+//         fin >> temp;
+//         if(temp == "$") {
+//             break;
+//         }
+
+//         p.right.push_back(Symbol(temp));
+//     }
+
+//     return fin;
+// }
 
 ostream &operator <<(ostream &cout, const Item &p) {
     vector<Symbol>::const_iterator it;
