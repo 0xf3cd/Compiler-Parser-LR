@@ -127,6 +127,8 @@ void LR0::generateAllClosure() {
     set<Symbol> a = G.getArguments(); // a for Arguments
     set<Symbol> t = G.getTerminals(); // t for Terminals 
     set<Symbol> symbols;
+    set<Symbol>::iterator it_symbols;
+    map<int, CLOSURE>::iterator it_cls1, it_cls2;
     
     set_union(a.begin(), a.end(), t.begin(), t.end(), inserter(symbols, symbols.begin()));
 
@@ -135,21 +137,37 @@ void LR0::generateAllClosure() {
     CLOSURE first_cls = generateFirstClosure();
     closures[0] = first_cls; //默认 0 号编号为初始的集合
 
-    for(auto it = symbols.begin(); it != symbols.end(); it++) {
-        
-    }
-    auto it = symbols.begin();
-    it++;
-    it++;
-    it++;
-    it++;
-    auto s = *it;
-    //go[I_no][X] = -1;//初始化为 -1 
-    auto x = getNewClosure(0, s);
-    cout << s << endl;
-    for(auto it = x.begin(); it != x.end(); it++) {
-        cout << *it << endl;
-    }
+    bool loop = true;
+    while(loop) {
+        loop = false;
+        for(it_cls1 = closures.begin(); it_cls1 != closures.end(); it_cls1++) {
+            int no = it_cls1 -> first;
+            for(it_symbols = symbols.begin(); it_symbols != symbols.end(); it_symbols++) {
+                go[no][*it_symbols] = -1;//GO函数初始化为 -1 
+                CLOSURE c = getNewClosure(no, *it_symbols);
+                if(c.size() == 0) { //不可为空
+                    continue;
+                }
+                bool has_shown = false;
+                for(it_cls2 = closures.begin(); it_cls2 != closures.end(); it_cls2++) {
+                    if(it_cls2 -> second == c) { //如果已有的集合与 c 相同，则跳出
+                        has_shown = true;
+                        break;
+                    }
+                }
+                if(has_shown) {
+                    //如果出现
+                    go[no][*it_symbols] = it_cls2 -> first; //指定 GO 函数
+                } else {
+                    //如果未出现
+                    int size = closures.size();
+                    closures[size] = c;
+                    go[no][*it_symbols] = size;
+                    loop = true;
+                }
+            }
+        }
+    }   
 }
 
 /* getItemStartWithDot 函数: 得到以 A 为左部，. 开头的项目
@@ -230,5 +248,33 @@ CLOSURE LR0::getNewClosure(int I_no,Symbol X) {
         }
     }
 
+    // if(I_no == 8) {
+    //     cout << 8 << endl;
+    //     for(auto it = c.begin(); it != c.end(); it++) {
+    //         cout << *it << endl;
+    //     }
+    // }
+
     return c;
+}
+
+
+void LR0::showGO() {
+    for(auto it1 = go.begin(); it1 != go.end(); it1++) {
+        auto &it1_sec = it1 -> second;
+        for(auto it2 = it1_sec.begin(); it2 != it1_sec.end(); it2++) {
+            cout << "GO(" << it1 -> first << ", " << (it2 -> first).name << "): " << it2 -> second << endl;
+        }
+    }
+}
+
+void LR0::showClosures() {
+    for(auto it1 = closures.begin(); it1 != closures.end(); it1++) {
+        cout << it1 -> first << ':' << endl;
+        auto &second = it1 -> second;
+        for(auto it2 = second.begin(); it2 != second.end(); it2++) {
+            cout << *it2 << endl;
+        }
+        cout << endl;
+    }
 }

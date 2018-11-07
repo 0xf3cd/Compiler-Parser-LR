@@ -67,4 +67,8 @@ public:
     /* generateAllClosure 函数: 算得所有闭包
      */
     void generateAllClosure();
+
+    void showGO();
+
+    void showClosures();
 };

@@ -17,6 +17,8 @@ int main() {
     L.generateItems();
     // L.showItems();
     L.generateAllClosure();
+    L.showClosures();
+    L.showGO();
 
     return 0;
 }
