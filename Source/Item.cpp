@@ -23,32 +23,52 @@ bool Item::operator <(const Item &p) const {
     it1 = right.begin();
     it2 = p.right.begin();
 
-    if(left.name < p.left.name) {
-        return true;
-    } else if(left.name > p.left.name) {
-        return false;
-    } else {
-        while(true) {
-            if(it1 == right.end()) {
-                return true;
-            } 
-
-            if(it2 == p.right.end()) {
-                return false;
+    if(left.name == p.left.name) {
+        if(right.size() == p.right.size()) {
+            int i;
+            for(i = 0; i < right.size(); i++) {
+                if(*it1 == *it2) {
+                    it1++;
+                    it2++;
+                } else {
+                    return *it1 < *it2;
+                }
             }
-
-            if(it1 -> name < it2 -> name) {
-                return true;
-            } else if(it1 -> name > it2 -> name) {
-                return false;
-            } else {
-                it1++;
-                it2++;
-            }
+        } else {
+            return right.size() < p.right.size();
         }
+    } else {
+        return left.name < p.left.name;
     }
 
     return false;
+
+    // if(left.name < p.left.name) {
+    //     return true;
+    // } else if(left.name > p.left.name) {
+    //     return false;
+    // } else {
+    //     int i;
+    //     int length = min(right.size(), p.right.size());
+
+    //     for(i = 0; i < length; i++) {
+    //         if(*it1 == *it2) {
+    //             it1++;
+    //             it2++;
+    //         } else {
+    //             return *it1 < *it2;
+    //         }
+    //     }
+
+    //     if(it1 == right.end()) {
+    //         return true;
+    //     } 
+
+    //     if(it2 == p.right.end()) {
+    //         return false;
+    //     }
+    // }
+    // return false;
 }
 
 Item & Item::operator =(const Item &p) {

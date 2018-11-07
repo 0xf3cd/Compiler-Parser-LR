@@ -60,15 +60,19 @@ public:
      */
     void generateItems();
 
-    /* showItems 函数: 展示所有项目
-     */
-    void showItems();
-
     /* generateAllClosure 函数: 算得所有闭包
      */
     void generateAllClosure();
 
+    /* showItems 函数: 展示所有项目
+     */
+    void showItems();
+
     void showGO();
 
     void showClosures();
+
+    /* isLR0 函数: 判断是否为 LR(0) 文法
+     */
+    bool isLR0();
 };

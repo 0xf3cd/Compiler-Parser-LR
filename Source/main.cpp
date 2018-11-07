@@ -17,8 +17,11 @@ int main() {
     L.generateItems();
     // L.showItems();
     L.generateAllClosure();
+
     L.showClosures();
-    L.showGO();
+    //L.showGO();
+
+    cout << L.isLR0() << endl;
 
     return 0;
 }

@@ -76,48 +76,63 @@ void LR0::showItems() {
  */
 //TODO: 修改成能自定义起始变元和点
 CLOSURE LR0::generateFirstClosure() {
-    set<Item>::iterator it_item;
+    set<Item>::iterator it_item1, it_item2;
     vector<Symbol>::const_iterator it_right;
+    set<Symbol> new_args;
+    set<Symbol>::iterator it_na;
+    int i;
 
-    CLOSURE &first_cls = closures[0];
+    CLOSURE first_cls;
+    CLOSURE ins, uni;
     Item init_item;
-    for(it_item = items.begin(); it_item != items.end(); it_item++) {
-        if(it_item -> left != G.getStartSymbol()) {
+    for(it_item1 = items.begin(); it_item1 != items.end(); it_item1++) {
+        if(it_item1 -> left != G.getStartSymbol()) {
             continue;
         }
 
+
         //TODO: 修改成能自定义起始变元和点
-        vector<Symbol> right = it_item -> right;
-        if(right[0] == "." && right[1] == "E") {
-            init_item = *it_item;
+        vector<Symbol> right = it_item1 -> right;
+        if(right[0] == "." && right[1] == "S") {
+            init_item = *it_item1;
             break;
         }
     }
     
-    first_cls.insert(init_item);
+    first_cls.insert(*it_item1);
 
-    for(it_item = first_cls.begin(); it_item != first_cls.end(); it_item++) {
-        for(it_right = (*it_item).right.begin(); it_right != (*it_item).right.end(); it_right++) {
-            //TODO: 修改成能自定义起始变元和点
-            if(*it_right == ".") {
-                it_right++;
-                if(it_right == (*it_item).right.end()) {
-                    it_right--;
+    bool loop = true;
+    while(loop) {
+        loop = false;
+        new_args.clear();
+        for(it_item1 = first_cls.begin(); it_item1 != first_cls.end(); it_item1++) {
+            vector<Symbol> const &right = it_item1 -> right;
+            for(i = 0; i < right.size(); i++) {
+                // for(auto x = first_cls.begin(); x != first_cls.end(); x++) {
+                //     cout << *x << endl;
+                // }
+                // cout << endl;
+                
+                if(!(right[i] == "." ) || (i + 1) == right.size()) {
+                    //如果不为 . 或是 . 在末尾，则跳出
                     continue;
                 }
 
-                if(G.isArgument(*it_right)) {
-                    set<Item> s = getItemStartWithDot(*it_right);
-                    set<Item>::iterator it;
-                    for(it = s.begin(); it != s.end(); it++) {
-                        first_cls.insert(*it);
-                    }
-                }
-                it_right--;
+                new_args.insert(right[i+1]);
+            }
+        }
+        
+        for(it_na = new_args.begin(); it_na != new_args.end(); it_na++) {
+            CLOSURE temp = getItemStartWithDot(*it_na);
+            uni.clear();
+            set_union(first_cls.begin(), first_cls.end(), temp.begin(), temp.end(), inserter(uni, uni.begin()));
+            if(uni.size() > first_cls.size()) {
+                first_cls = uni;
+                loop = true;
             }
         }
     }
-
+    
     return first_cls;
 }
 
@@ -137,37 +152,74 @@ void LR0::generateAllClosure() {
     CLOSURE first_cls = generateFirstClosure();
     closures[0] = first_cls; //默认 0 号编号为初始的集合
 
+    
+    
+    // long count = 0;
+    int i, j;
+    int now_size;
+    int last_size = 0;
     bool loop = true;
+    // while(loop) {
+    //     loop = false;
+    //     now_size = closures.size();
+    //     // cout << size << endl;
+    //     for(it_cls1 = closures.begin(); it_cls1 != closures.end(); it_cls1++) {
+    //         int no = it_cls1 -> first;
+    //         for(it_symbols = symbols.begin(); it_symbols != symbols.end(); it_symbols++) {
+    //             go[no][*it_symbols] = -1;//GO函数初始化为 -1 
+    //             CLOSURE c = getNewClosure(no, *it_symbols);
+    //             if(c.size() == 0) { //不可为空
+    //                 continue;
+    //             }
+    //             bool has_shown = false;
+    //             for(it_cls2 = closures.begin(); it_cls2 != closures.end(); it_cls2++) {
+    //                 if(it_cls2 -> second == c) { //如果已有的集合与 c 相同，则跳出
+    //                     has_shown = true;
+    //                     break;
+    //                 }
+    //             }
+    //             if(has_shown) {
+    //                 //如果出现
+    //                 go[no][*it_symbols] = it_cls2 -> first; //指定 GO 函数
+    //             } else {
+    //                 //如果未出现
+    //                 int size = closures.size();
+    //                 closures[size] = c;
+    //                 go[no][*it_symbols] = size;
+    //                 loop = true;
+    //             }
+    //         }
+    //     }
+    // }   
     while(loop) {
         loop = false;
-        for(it_cls1 = closures.begin(); it_cls1 != closures.end(); it_cls1++) {
-            int no = it_cls1 -> first;
+        now_size = closures.size();
+        for(i = last_size; i < now_size; i++) {
             for(it_symbols = symbols.begin(); it_symbols != symbols.end(); it_symbols++) {
-                go[no][*it_symbols] = -1;//GO函数初始化为 -1 
-                CLOSURE c = getNewClosure(no, *it_symbols);
+                go[i][*it_symbols] = -1;//GO函数初始化为 -1
+                CLOSURE c = getNewClosure(i, *it_symbols);
                 if(c.size() == 0) { //不可为空
                     continue;
                 }
+
                 bool has_shown = false;
-                for(it_cls2 = closures.begin(); it_cls2 != closures.end(); it_cls2++) {
-                    if(it_cls2 -> second == c) { //如果已有的集合与 c 相同，则跳出
+                for(j = 0; j < now_size; j++) {
+                    if(closures[j] == c) { //如果已有的集合与 c 相同，则跳出
                         has_shown = true;
+                        go[i][*it_symbols] = j;
                         break;
                     }
                 }
-                if(has_shown) {
-                    //如果出现
-                    go[no][*it_symbols] = it_cls2 -> first; //指定 GO 函数
-                } else {
-                    //如果未出现
-                    int size = closures.size();
-                    closures[size] = c;
-                    go[no][*it_symbols] = size;
+
+                if(!has_shown) {
+                    closures[closures.size()] = c;
+                    go[i][*it_symbols] = closures.size();
                     loop = true;
                 }
             }
         }
-    }   
+        last_size = now_size;
+    }
 }
 
 /* getItemStartWithDot 函数: 得到以 A 为左部，. 开头的项目
@@ -277,4 +329,49 @@ void LR0::showClosures() {
         }
         cout << endl;
     }
+}
+
+/* isLR0 函数: 判断是否为 LR(0) 文法
+ */
+bool LR0::isLR0() {
+    map<int, CLOSURE>::iterator it_cls;
+    set<Item>::iterator it_item;
+
+    for(it_cls = closures.begin(); it_cls != closures.end(); it_cls++) {
+        set<Item> &cls = it_cls -> second;
+        int shift_count = 0; //shift 移进
+        int reduce_count = 0; //reduce 规约
+        int i;
+        //cls 为一个 closure
+        for(it_item = cls.begin(); it_item != cls.end(); it_item++) {
+            vector<Symbol> const &right = it_item -> right;
+            if(*(right.end() - 1) == ".") {
+                //是规约项目
+                reduce_count++;
+                if(reduce_count > 1) { //有多个规约项目
+                    return false;
+                }
+
+                if(reduce_count >= 1 && shift_count >= 1) {
+                    return false;
+                }
+            }
+
+            for(i = 0; i < right.size(); i++) {
+                if(!(right[i] == ".") || (i + 1) == right.size()) {
+                    continue;
+                }
+                if(G.isTerminal(right[i+1])) {
+                    //是移进项目
+                    shift_count++;
+                }
+
+                if(reduce_count >= 1 && shift_count >= 1) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
 }
