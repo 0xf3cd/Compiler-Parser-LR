@@ -23,7 +23,32 @@ bool Item::operator <(const Item &p) const {
     it1 = right.begin();
     it2 = p.right.begin();
 
-    return true;//(left.name == p.left.name)? it1 -> name > it2 -> name: left.name < p.left.name;
+    if(left.name < p.left.name) {
+        return true;
+    } else if(left.name > p.left.name) {
+        return false;
+    } else {
+        while(true) {
+            if(it1 == right.end()) {
+                return true;
+            } 
+
+            if(it2 == p.right.end()) {
+                return false;
+            }
+
+            if(it1 -> name < it2 -> name) {
+                return true;
+            } else if(it1 -> name > it2 -> name) {
+                return false;
+            } else {
+                it1++;
+                it2++;
+            }
+        }
+    }
+
+    return false;
 }
 
 Item & Item::operator =(const Item &p) {
@@ -33,7 +58,7 @@ Item & Item::operator =(const Item &p) {
     return *this;
 }
 
-bool Item::operator ==(const Item &p) {
+bool Item::operator ==(const Item &p) const {
     if(left == p.left && right == p.right) {
         return true;
     } else {

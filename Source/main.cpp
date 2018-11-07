@@ -11,14 +11,12 @@
 using namespace std;
 
 int main() {
-    Grammar G;
-    LR0 L;
+    LR0 L;    
 
-    G.analyzeGrammar("../TestFile/Grammar.txt");
-    G.setStartArgument("E");
-
-    L.generateItems(G);
-    L.showItems();
+    L.initialize("../TestFile/Grammar.txt");
+    L.generateItems();
+    // L.showItems();
+    L.generateAllClosure();
 
     return 0;
 }

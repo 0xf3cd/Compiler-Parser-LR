@@ -26,7 +26,7 @@ public:
 
     Item & operator =(const Item &p);
 
-    bool operator ==(const Item &p);
+    bool operator ==(const Item &p) const;
 
     // friend istream &operator >>(istream &fin, Item &p);
 

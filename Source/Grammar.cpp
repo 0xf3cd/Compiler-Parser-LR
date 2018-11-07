@@ -456,7 +456,7 @@ Grammar::Grammar() {
  * @param arg: 起始变元名
  */
 void Grammar::setStartArgument(string arg) {
- START_ARG = arg;
+    START_ARG = arg;
 }
 
 /* setEndTerminal 函数: 设定源文件的终结字符

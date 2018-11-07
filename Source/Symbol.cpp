@@ -23,7 +23,14 @@ void Symbol::setNo(int new_no) const {
 /* 使用 C++ STL 库时，需要定义 < 运算符
  */
 bool Symbol::operator <(const Symbol &s) const {
-    return no < s.no;
+    if(no < s.no) {
+        return true;
+    } else if(no > s.no) {
+        return false;
+    } else {
+        return name < s.name;
+    }
+    //return no < s.no;
 }
 
 bool Symbol::operator >(const Symbol &s) const {
