@@ -1,5 +1,6 @@
 //LR0 分析法相关
 #include <set>
+#include <list>
 
 #ifndef ITEM
 #define ITEM
@@ -16,12 +17,33 @@
 #include "Grammar.h"
 #endif
 
+#ifndef TOKENIZER
+#define TOKENIZER
+#include "Tokenizer.h"
+#endif
+
 using namespace std;
 
 typedef set<Item> CLOSURE;
 
+struct action_unit {
+    string first;
+    int second;
+};
+
+struct snapshot {
+    action_unit au;
+    word token;
+    Symbol symbol;
+    Production production;
+    int error;
+    list<Symbol> symbol_stack;
+    list<int> state_stack;
+};
+
 class LR0 {
 private:
+    Tokenizer T;
     Grammar G;
     set<Item> items;
     map<int, CLOSURE> closures; //编号
@@ -34,6 +56,12 @@ private:
      * 通过 go[I][X] 索引
      */
     map<int, map<Symbol, int> > go; 
+
+    map<int, map<Symbol, action_unit> > ACTION;
+
+    map<int, map<Symbol, int> > GOTO;
+
+    map<int, Production> NO_PROD;
 
     /* generateFirstClosure 函数: 得到第一个闭包
      * @return: 初始的项目集闭包
@@ -51,10 +79,23 @@ private:
      */
     CLOSURE getNewClosure(int I_no,Symbol X);
 
+    void encodeProduction();
+
+    int findProduction(Item item);
+
+    CLOSURE extendClosure(CLOSURE cls);
+
+    /* translate 函数: 将 token 转换成 Symbol
+     */
+    Symbol translate(word token);
+
+    list<Symbol> symbol_stack;
+    list<int> state_stack;
+    word last_token; //上一次通过词法分析器读入的词
 public:
     /* initialize 函数: 初始化语法
      */
-    void initialize(string gra_dir = "../TestFile/Grammar.txt");
+    void initialize(string gra_dir = "../TestFile/Grammar.txt", string src_dir = "../TestFile/example.cmm");
 
     /* generateItems 函数: 将产生式转换为项目
      */
@@ -75,4 +116,13 @@ public:
     /* isLR0 函数: 判断是否为 LR(0) 文法
      */
     bool isLR0();
+
+    void generateACTION();
+
+    void generateGOTO();
+
+    void showACTION(int state);
+    void showGOTO(int state);
+
+    snapshot getNext();
 };
