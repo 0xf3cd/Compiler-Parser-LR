@@ -5,6 +5,8 @@
 #include <map>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
+#include <iterator>
 
 #ifndef SYMBOL
 #define SYMBOL

@@ -1,5 +1,6 @@
 // 文件读取部分
 #include <fstream>
+#include <string>
 using namespace std;
 
 class FileReader {
