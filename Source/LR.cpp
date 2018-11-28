@@ -405,6 +405,67 @@ bool LR::isLR0() {
     return true;
 }
 
+/* isSLR1 函数: 判断是否为 SLR(1) 文法
+ */
+bool LR::isSLR1() {
+    int i, j;
+    map<int, CLOSURE>::iterator it_cls;
+    set<Item>::iterator it_item;
+    vector< FOLLOW_SET > all_conflicts; 
+    map<Symbol, FOLLOW_SET> follow = G.getFollow(); //(变元, FOLLOW集) 键值对
+    set<Symbol> inter;
+
+    for(it_cls = closures.begin(); it_cls != closures.end(); it_cls++) {
+        set<Item> &cls = it_cls -> second; //cls 是项目集
+        all_conflicts.clear();
+        set<Symbol> after_dot;
+
+        for(it_item = cls.begin(); it_item != cls.end(); it_item++) { //遍历这个项目集中的每一个项目
+            vector<Symbol> const &right = it_item -> right; //right 为项目的右部
+            Symbol const &left = it_item -> left; //项目左部
+            
+            if(*(right.end() - 1) == ".") { //如果项目最后的一个字符是 .，说明是规约项目
+                FOLLOW_SET left_follow = follow[left]; //找到左部对应的 FOLLOW 集合
+                if(find(all_conflicts.begin(), all_conflicts.end(), left_follow) == all_conflicts.end()) {
+                    //没有这个set
+                    all_conflicts.push_back(left_follow);
+                    //cout << "000\n";
+                } else {
+                    //cout << "111\n";
+                }
+                continue;
+            }
+            //否则可能是移进项目
+            for(i = 0; i < right.size(); i++) {
+                if(!(right[i] == ".") || (i + 1) == right.size()) {
+                    continue;
+                }
+                if(G.isTerminal(right[i+1])) {
+                    //是移进项目
+                    after_dot.insert(right[i+1]);
+                }
+            }
+        }
+
+        all_conflicts.push_back(after_dot);
+        //至此，所有可能存在冲突的集合都保存在 all_conflicts 中了
+        for(i = 0; i < all_conflicts.size(); i++) {
+            for(j = 0; j < all_conflicts.size(); j++) {
+                if(i == j) {
+                    continue;
+                }
+                inter.clear();
+                set_intersection(all_conflicts[i].begin(), all_conflicts[i].end(), all_conflicts[j].begin(), all_conflicts[j].end(), inserter(inter, inter.begin()));
+                if(inter.size() > 0) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 void LR::encodeProduction() {
     set<Production> P = G.getProductions();
     set<Production>::iterator it;

@@ -23,18 +23,24 @@ int main() {
         cout << "IS NOT LR(0)" <<endl;
     }
 
-    L.generateACTION();
-    L.generateGOTO();
-
-    L.showItems();
-    L.showClosures();
-    L.showGO();
-    
-    for(int i = 0; i <= 11; i++) {
-         L.showACTION(i);
-         L.showGOTO(i);
-         cout << endl;
+    if(L.isSLR1()) {
+        cout << "IS SLR(1)" <<endl;
+    } else {
+        cout << "IS NOT SLR(1)" <<endl;
     }
+
+    // L.generateACTION();
+    // L.generateGOTO();
+
+    // L.showItems();
+    // L.showClosures();
+    // L.showGO();
+    
+    // for(int i = 0; i <= 11; i++) {
+    //      L.showACTION(i);
+    //      L.showGOTO(i);
+    //      cout << endl;
+    // }
     
     return 0;
 }

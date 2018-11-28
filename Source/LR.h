@@ -117,6 +117,10 @@ public:
      */
     bool isLR0();
 
+    /* isSLR1 函数: 判断是否为 SLR(1) 文法
+     */
+    bool isSLR1();
+
     void generateACTION();
 
     void generateGOTO();
