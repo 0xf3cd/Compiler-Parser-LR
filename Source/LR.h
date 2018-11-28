@@ -41,7 +41,7 @@ struct snapshot {
     list<int> state_stack;
 };
 
-class LR0 {
+class LR {
 private:
     Tokenizer T;
     Grammar G;

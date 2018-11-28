@@ -3,15 +3,15 @@
 #include "Grammar.h"
 #endif
 
-#ifndef LR0_
-#define LR0_
-#include "LR0.h"
+#ifndef LR_
+#define LR_
+#include "LR.h"
 #endif
 
 using namespace std;
 
 int main() {
-    LR0 L;    
+    LR L;    
 
     L.initialize("../TestFile/Grammar.txt");
     L.generateItems(); //拆分产生式为项目

@@ -1,6 +1,6 @@
-#ifndef LR0_
-#define LR0_
-#include "LR0.h"
+#ifndef LR_
+#define LR_
+#include "LR.h"
 #endif
 
 #ifndef SYMBOL
@@ -19,12 +19,12 @@
 
 using namespace std;
 
-#define START "E"
+#define START "S"
 
 /* initialize 函数: 初始化语法
  */
 //TODO 暂时约定起始变元一定要是 S', 一定以 # 结尾
-void LR0::initialize(string gra_dir, string src_dir) {
+void LR::initialize(string gra_dir, string src_dir) {
     G.analyzeGrammar(gra_dir);
     G.setStartArgument("S'");
     G.setEndTerminal("#", 0);
@@ -41,7 +41,7 @@ void LR0::initialize(string gra_dir, string src_dir) {
 
 /* generateItems 函数: 将产生式转换为项目
  */
-void LR0::generateItems() {
+void LR::generateItems() {
     set<Production> &productions = G.getProductions();
     set<Production>::iterator it_p;
     vector<Symbol>::const_iterator it_s;
@@ -80,7 +80,7 @@ void LR0::generateItems() {
 
 /* showItems 函数: 展示所有项目
  */
-void LR0::showItems() {
+void LR::showItems() {
     set<Item>::iterator it;
     for(it = items.begin(); it != items.end(); it++) {
         cout << *it << endl;
@@ -91,7 +91,7 @@ void LR0::showItems() {
  * @return: 初始的项目集闭包
  */
 //TODO: 修改成能自定义起始变元和点
-CLOSURE LR0::generateFirstClosure() {
+CLOSURE LR::generateFirstClosure() {
     set<Item>::iterator it_item1, it_item2;
     vector<Symbol>::const_iterator it_right;
     set<Symbol> new_args;
@@ -105,7 +105,6 @@ CLOSURE LR0::generateFirstClosure() {
         if(it_item1 -> left != G.getStartSymbol()) {
             continue;
         }
-
 
         //TODO: 修改成能自定义起始变元和点
         vector<Symbol> right = it_item1 -> right;
@@ -152,7 +151,7 @@ CLOSURE LR0::generateFirstClosure() {
     return first_cls;
 }
 
-CLOSURE LR0::extendClosure(CLOSURE cls) {
+CLOSURE LR::extendClosure(CLOSURE cls) {
     set<Item>::iterator it_item1, it_item2;
     set<Symbol> new_args;
     set<Symbol>::iterator it_na;
@@ -202,7 +201,7 @@ CLOSURE LR0::extendClosure(CLOSURE cls) {
 
 /* generateAllClosure 函数: 算得所有闭包
  */
-void LR0::generateAllClosure() {
+void LR::generateAllClosure() {
     set<Symbol> a = G.getArguments(); // a for Arguments
     set<Symbol> t = G.getTerminals(); // t for Terminals 
     set<Symbol> symbols;
@@ -261,7 +260,7 @@ void LR0::generateAllClosure() {
 /* getItemStartWithDot 函数: 得到以 A 为左部，. 开头的项目
  * @return: 一个项目集合
  */
-set<Item> LR0::getItemStartWithDot(Symbol A) {
+set<Item> LR::getItemStartWithDot(Symbol A) {
     set<Item> s;//s for Set
     set<Item>::iterator it;
 
@@ -282,7 +281,7 @@ set<Item> LR0::getItemStartWithDot(Symbol A) {
  * @param I: GO(I, X) 中的 I，即为一个 closure 集合
  * @param X: GO(I, X) 中的 X，即为一个符号
  */
-CLOSURE LR0::getNewClosure(int I_no,Symbol X) {
+CLOSURE LR::getNewClosure(int I_no,Symbol X) {
     set<Symbol>::iterator it_s;
     CLOSURE::iterator it_c;
     CLOSURE J;
@@ -337,18 +336,11 @@ CLOSURE LR0::getNewClosure(int I_no,Symbol X) {
         }
     }
 
-    // if(I_no == 8) {
-    //     cout << 8 << endl;
-    //     for(auto it = c.begin(); it != c.end(); it++) {
-    //         cout << *it << endl;
-    //     }
-    // }
-
     return extendClosure(c);
 }
 
 
-void LR0::showGO() {
+void LR::showGO() {
     for(auto it1 = go.begin(); it1 != go.end(); it1++) {
         auto &it1_sec = it1 -> second;
         for(auto it2 = it1_sec.begin(); it2 != it1_sec.end(); it2++) {
@@ -357,7 +349,7 @@ void LR0::showGO() {
     }
 }
 
-void LR0::showClosures() {
+void LR::showClosures() {
     for(auto it1 = closures.begin(); it1 != closures.end(); it1++) {
         cout << it1 -> first << ':' << endl;
         auto &second = it1 -> second;
@@ -368,9 +360,9 @@ void LR0::showClosures() {
     }
 }
 
-/* isLR0 函数: 判断是否为 LR(0) 文法
+/* isLR 函数: 判断是否为 LR(0) 文法
  */
-bool LR0::isLR0() {
+bool LR::isLR0() {
     map<int, CLOSURE>::iterator it_cls;
     set<Item>::iterator it_item;
 
@@ -413,7 +405,7 @@ bool LR0::isLR0() {
     return true;
 }
 
-void LR0::encodeProduction() {
+void LR::encodeProduction() {
     set<Production> P = G.getProductions();
     set<Production>::iterator it;
     int count = 0;
@@ -423,7 +415,7 @@ void LR0::encodeProduction() {
     }
 }
 
-int LR0::findProduction(Item item) {
+int LR::findProduction(Item item) {
     Production temp;
 
     temp.left = item.left;
@@ -446,7 +438,7 @@ int LR0::findProduction(Item item) {
     return i;
 }
 
-void LR0::generateACTION() {
+void LR::generateACTION() {
     set<Symbol> t = G.getTerminals();
     Symbol END = G.getEndSymbol();
     int i, j;
@@ -504,7 +496,7 @@ void LR0::generateACTION() {
     }
 }
 
-void LR0::generateGOTO() {
+void LR::generateGOTO() {
     set<Symbol> a = G.getArguments();
     int i;
     int size = closures.size();
@@ -518,7 +510,7 @@ void LR0::generateGOTO() {
     }
 }
 
-void LR0::showACTION(int state) {
+void LR::showACTION(int state) {
     set<Symbol> t = G.getTerminals();
     Symbol END = G.getEndSymbol();
 
@@ -542,7 +534,7 @@ void LR0::showACTION(int state) {
     }
 }
 
-void LR0::showGOTO(int state) {
+void LR::showGOTO(int state) {
     set<Symbol> a = G.getArguments();
     for(set<Symbol>::iterator it = a.begin(); it != a.end(); it++) {
         // cout << it -> name << ": " << GOTO[state][*it] << endl;
@@ -552,7 +544,7 @@ void LR0::showGOTO(int state) {
 
 /* translate 函数: 将 token 转换成 Symbol
  */
-Symbol LR0::translate(word token) {
+Symbol LR::translate(word token) {
     Symbol s;
     if(token.type == 7) { //ID
         s.name = "ID";
@@ -565,7 +557,7 @@ Symbol LR0::translate(word token) {
     return s;
 }
 
-snapshot LR0::getNext() {
+snapshot LR::getNext() {
     snapshot ss; //ss for SnapShot
     Symbol now_symbol;
     Production now_production; //对应的产生式
