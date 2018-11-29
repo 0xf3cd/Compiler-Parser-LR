@@ -117,16 +117,20 @@ public:
      */
     bool isLR0();
 
+    vector<FOLLOW_SET> getAllConflicts(int num);
+
     /* isSLR1 函数: 判断是否为 SLR(1) 文法
      */
     bool isSLR1();
 
-    void generateACTION();
+    void generateLR0ACTION();
+    void generateSLR1ACTION();
 
     void generateGOTO();
 
     void showACTION(int state);
     void showGOTO(int state);
+    void showEncodedProduction();
 
     snapshot getNext();
 };

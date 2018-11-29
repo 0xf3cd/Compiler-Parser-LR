@@ -29,18 +29,49 @@ int main() {
         cout << "IS NOT SLR(1)" <<endl;
     }
 
-    // L.generateACTION();
-    // L.generateGOTO();
+    L.generateSLR1ACTION();
+    L.generateGOTO();
 
     // L.showItems();
     // L.showClosures();
     // L.showGO();
+    // L.showEncodedProduction();
     
-    // for(int i = 0; i <= 11; i++) {
+    // for(int i = 0; i <= 185; i++) {
     //      L.showACTION(i);
     //      L.showGOTO(i);
     //      cout << endl;
     // }
+    // cout << endl;
+
+    snapshot ss;
+    list<Symbol>::iterator it_s;
+    list<int>::iterator it_i;
+    while(true) {
+        ss = L.getNext();
+        cout << ss.au.first << ss.au.second << endl;
+        cout << ss.token.value << endl;
+        cout << ss.symbol.name << endl;
+        cout << ss.production << endl;
+        cout << ss.error << endl;
+
+        for(it_s = ss.symbol_stack.begin(); it_s != ss.symbol_stack.end(); it_s++) {
+            cout << it_s -> name << ' ';
+        }
+        cout << endl;
+
+        for(it_i = ss.state_stack.begin(); it_i != ss.state_stack.end(); it_i++) {
+            cout << *it_i << ' ';
+        }
+        cout << endl;
+
+        cout << endl;
+
+        if(ss.error == 3) {
+            cout << "success" << endl;
+            break;
+        }
+    }
     
     return 0;
 }

@@ -8,6 +8,11 @@
 #include "Symbol.h"
 #endif
 
+#ifndef PRODUCTION
+#define PRODUCTION
+#include "Production.h"
+#endif
+
 #ifndef TOKENIZER
 #define TOKENIZER
 #include "Tokenizer.h"
@@ -341,19 +346,25 @@ CLOSURE LR::getNewClosure(int I_no,Symbol X) {
 
 
 void LR::showGO() {
-    for(auto it1 = go.begin(); it1 != go.end(); it1++) {
-        auto &it1_sec = it1 -> second;
-        for(auto it2 = it1_sec.begin(); it2 != it1_sec.end(); it2++) {
+    map<int, map<Symbol, int> >::iterator it1;
+    map<Symbol, int> it1_sec;
+    map<Symbol, int>::iterator it2;
+    for(it1 = go.begin(); it1 != go.end(); it1++) {
+        it1_sec = it1 -> second;
+        for(it2 = it1_sec.begin(); it2 != it1_sec.end(); it2++) {
             cout << "GO(" << it1 -> first << ", " << (it2 -> first).name << "): " << it2 -> second << endl;
         }
     }
 }
 
 void LR::showClosures() {
-    for(auto it1 = closures.begin(); it1 != closures.end(); it1++) {
+    map<int, CLOSURE>::iterator it1;
+    CLOSURE second;
+    CLOSURE::iterator it2;
+    for(it1 = closures.begin(); it1 != closures.end(); it1++) {
         cout << it1 -> first << ':' << endl;
-        auto &second = it1 -> second;
-        for(auto it2 = second.begin(); it2 != second.end(); it2++) {
+        second = it1 -> second;
+        for(it2 = second.begin(); it2 != second.end(); it2++) {
             cout << *it2 << endl;
         }
         cout << endl;
@@ -405,49 +416,57 @@ bool LR::isLR0() {
     return true;
 }
 
+vector<FOLLOW_SET> LR::getAllConflicts(int num) {
+    int i, j;
+    vector< FOLLOW_SET > all_conflicts; 
+    set<Item>::iterator it_item;
+    CLOSURE &cls = closures[num];
+    set<Symbol> after_dot;
+    map<Symbol, FOLLOW_SET> follow = G.getFollow(); //(变元, FOLLOW集) 键值对
+
+    for(it_item = cls.begin(); it_item != cls.end(); it_item++) { //遍历这个项目集中的每一个项目
+        vector<Symbol> const &right = it_item -> right; //right 为项目的右部
+        Symbol const &left = it_item -> left; //项目左部
+        
+        if(*(right.end() - 1) == ".") { //如果项目最后的一个字符是 .，说明是规约项目
+            FOLLOW_SET left_follow = follow[left]; //找到左部对应的 FOLLOW 集合
+            if(find(all_conflicts.begin(), all_conflicts.end(), left_follow) == all_conflicts.end()) {
+                //没有这个set
+                all_conflicts.push_back(left_follow);
+                //cout << "000\n";
+            } else {
+                //cout << "111\n";
+            }
+            continue;
+        }
+        //否则可能是移进项目
+        for(i = 0; i < right.size(); i++) {
+            if(!(right[i] == ".") || (i + 1) == right.size()) {
+                continue;
+            }
+            if(G.isTerminal(right[i+1])) {
+                //是移进项目
+                after_dot.insert(right[i+1]);
+            }
+        }
+    }
+
+    all_conflicts.push_back(after_dot);
+    return all_conflicts;
+}
+
 /* isSLR1 函数: 判断是否为 SLR(1) 文法
  */
 bool LR::isSLR1() {
-    int i, j;
-    map<int, CLOSURE>::iterator it_cls;
-    set<Item>::iterator it_item;
+    int i, j, k;
     vector< FOLLOW_SET > all_conflicts; 
-    map<Symbol, FOLLOW_SET> follow = G.getFollow(); //(变元, FOLLOW集) 键值对
     set<Symbol> inter;
 
-    for(it_cls = closures.begin(); it_cls != closures.end(); it_cls++) {
-        set<Item> &cls = it_cls -> second; //cls 是项目集
+    // for(it_cls = closures.begin(); it_cls != closures.end(); it_cls++) {
+    for(k = 0; k < closures.size(); k++) {
         all_conflicts.clear();
-        set<Symbol> after_dot;
+        all_conflicts = getAllConflicts(k);
 
-        for(it_item = cls.begin(); it_item != cls.end(); it_item++) { //遍历这个项目集中的每一个项目
-            vector<Symbol> const &right = it_item -> right; //right 为项目的右部
-            Symbol const &left = it_item -> left; //项目左部
-            
-            if(*(right.end() - 1) == ".") { //如果项目最后的一个字符是 .，说明是规约项目
-                FOLLOW_SET left_follow = follow[left]; //找到左部对应的 FOLLOW 集合
-                if(find(all_conflicts.begin(), all_conflicts.end(), left_follow) == all_conflicts.end()) {
-                    //没有这个set
-                    all_conflicts.push_back(left_follow);
-                    //cout << "000\n";
-                } else {
-                    //cout << "111\n";
-                }
-                continue;
-            }
-            //否则可能是移进项目
-            for(i = 0; i < right.size(); i++) {
-                if(!(right[i] == ".") || (i + 1) == right.size()) {
-                    continue;
-                }
-                if(G.isTerminal(right[i+1])) {
-                    //是移进项目
-                    after_dot.insert(right[i+1]);
-                }
-            }
-        }
-
-        all_conflicts.push_back(after_dot);
         //至此，所有可能存在冲突的集合都保存在 all_conflicts 中了
         for(i = 0; i < all_conflicts.size(); i++) {
             for(j = 0; j < all_conflicts.size(); j++) {
@@ -488,18 +507,20 @@ int LR::findProduction(Item item) {
             break;
         }
     }
-
     temp.right.erase(it);
+
     int i;
     for(i = 0; i < NO_PROD.size(); i++) {
         if(NO_PROD[i].left == temp.left && NO_PROD[i].right == temp.right) {
+            return i;
+        } else if(NO_PROD[i].left == temp.left && NO_PROD[i].right.size() == 1 && NO_PROD[i].right[0] == "ε" && temp.right.size() == 0) {
             return i;
         }
     }
     return i;
 }
 
-void LR::generateACTION() {
+void LR::generateLR0ACTION() {
     set<Symbol> t = G.getTerminals();
     Symbol END = G.getEndSymbol();
     int i, j;
@@ -536,6 +557,67 @@ void LR::generateACTION() {
                 au.first = "r";
                 au.second = findProduction(*it_cls);
                 ACTION[i][END] = au;
+                for(set<Symbol>::iterator it_s = t.begin(); it_s != t.end(); it_s++) {
+                    ACTION[i][*it_s] = au;
+                }
+                continue;
+            }
+
+            for(j = 0; j < right.size(); j++) {
+                if(right[j] == ".") {
+                    if(G.isTerminal(right[j+1])) {
+                        action_unit au;
+                        au.first = "s";
+                        au.second = go[i][right[j+1]];
+                        
+                        ACTION[i][right[j+1]] = au;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void LR::generateSLR1ACTION() {
+    //set<Symbol> t = G.getTerminals();
+    Symbol END = G.getEndSymbol();
+    int i, j;
+    int size = closures.size();
+    CLOSURE::iterator it_cls;
+    map<Symbol, FOLLOW_SET> follow = G.getFollow(); //(变元, FOLLOW集) 键值对
+
+    action_unit ERROR;
+    ERROR.first = "err";
+
+    encodeProduction();
+
+    for(i = 0; i < size; i++) {
+        CLOSURE &cls = closures[i];
+        
+        for(it_cls = cls.begin(); it_cls != cls.end(); it_cls++) {
+            Symbol left = it_cls -> left;
+            vector<Symbol> right = it_cls -> right;
+
+            //先全部初始化为 ERROR
+            // for(set<Symbol>::iterator it_s = t.begin(); it_s != t.end(); it_s++) {
+            //     ACTION[i][*it_s] = ERROR;
+            // }
+            // ACTION[i][END] = ERROR;
+
+            if(left == "S'" && right[0] == START && right[1] == "." && right.size() == 2) {
+                action_unit au;
+                au.first = "acc";
+                ACTION[i][END] = au;
+                continue;
+            }
+
+            if(right.back() == ".") {
+                action_unit au;
+                au.first = "r";
+                au.second = findProduction(*it_cls);
+
+                FOLLOW_SET t = follow[it_cls -> left]; //对应的 FOLLOW 集合
+                // ACTION[i][END] = au;
                 for(set<Symbol>::iterator it_s = t.begin(); it_s != t.end(); it_s++) {
                     ACTION[i][*it_s] = au;
                 }
@@ -603,6 +685,13 @@ void LR::showGOTO(int state) {
     }
 }
 
+void LR::showEncodedProduction() {
+    map<int, Production>::iterator it;
+    for(it = NO_PROD.begin(); it != NO_PROD.end(); it++) {
+        cout << it -> first << ' ' << it -> second << endl;
+    }
+}
+
 /* translate 函数: 将 token 转换成 Symbol
  */
 Symbol LR::translate(word token) {
@@ -645,6 +734,7 @@ snapshot LR::getNext() {
     int state_top = state_stack.front();
     // state_stack.pop_front(); //弹栈
     action_unit au = ACTION[state_top][now_symbol];
+    // cout << state_top << ' ' << now_symbol << endl;
     ss.au = au;
 
     if(au.first == "") {
@@ -656,14 +746,18 @@ snapshot LR::getNext() {
         last_token = T.readNextWord();
         ss.error = 1;
     } else if(au.first == "r") {
-        state_stack.pop_front(); //弹栈
         now_production = NO_PROD[au.second];
 
         //进行规约
         int i, length;
         length = now_production.right.size();
+        if(length == 1 && now_production.right[0] == "ε") {
+            length = 0;
+        }
+
         for(i = 0; i < length; i++) {
             symbol_stack.pop_front();
+            state_stack.pop_front();
         }
         symbol_stack.push_front(now_production.left);
         ss.production = now_production;
