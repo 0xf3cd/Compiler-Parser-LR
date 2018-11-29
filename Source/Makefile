@@ -1,5 +1,4 @@
 OSNAME = $(shell uname)
-TARGET = test
 OBJS = FileReader.o \
 	   Symbol.o \
 	   Production.o \
@@ -11,11 +10,15 @@ OBJS = FileReader.o \
 ifeq ($(OSNAME), Darwin)
 	CXX = clang++
 	DYLIB = LR.dylib
+	TARGET = test
 endif
 
-# $(TARGET) : $(OBJS)
-# 	-rm -f $@	
-# 	g++ -o $(TARGET) $(OBJS)
+ifeq ($(OS), Windows_NT)
+	CXX = g++
+	DYLIB = LR.dll
+	TARGET = test.exe
+endif
+
 
 $(TARGET) : $(DYLIB) main.o
 	$(CXX) -o $(TARGET) $(DYLIB) main.o
