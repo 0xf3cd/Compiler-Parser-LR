@@ -10,10 +10,15 @@
 
 using namespace std;
 
-int main() {
-    LR L;    
+int main(int argc, char *argv[]) {
+    LR L;
 
-    L.initialize("../TestFile/Grammar.txt");
+    if(argc <= 2) {
+        L.initialize("../TestFile/Grammar.txt");
+    } else {
+        L.initialize(argv[1], argv[2]);
+    }
+
     L.generateItems(); //拆分产生式为项目
     L.generateAllClosure(); //生成闭包及 GO(I, X)
 
@@ -22,34 +27,26 @@ int main() {
     } else {
         cout << "IS NOT LR(0)" <<endl;
     }
-
     if(L.isSLR1()) {
         cout << "IS SLR(1)" <<endl;
     } else {
         cout << "IS NOT SLR(1)" <<endl;
     }
+    cout << endl;
 
     L.generateSLR1ACTION();
     L.generateGOTO();
-
-    // L.showItems();
-    // L.showClosures();
-    // L.showGO();
-    // L.showEncodedProduction();
-    
-    // for(int i = 0; i <= 185; i++) {
-    //      L.showACTION(i);
-    //      L.showGOTO(i);
-    //      cout << endl;
-    // }
-    // cout << endl;
 
     snapshot ss;
     list<Symbol>::iterator it_s;
     list<int>::iterator it_i;
     while(true) {
         ss = L.getNext();
-        cout << ss.au.first << ss.au.second << endl;
+        if(ss.au.first == "acc") {
+            cout << ss.au.first << endl;
+        } else {
+            cout << ss.au.first << ss.au.second << endl;
+        }
         cout << ss.token.value << endl;
         cout << ss.symbol.name << endl;
         cout << ss.production << endl;
@@ -69,6 +66,10 @@ int main() {
 
         if(ss.error == 3) {
             cout << "success" << endl;
+            break;
+        }
+        if(ss.error < 0) {
+            cout << "wrong" << endl;
             break;
         }
     }
