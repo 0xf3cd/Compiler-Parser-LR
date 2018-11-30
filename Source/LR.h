@@ -31,6 +31,14 @@ struct action_unit {
     int second;
 };
 
+/* error 值的意义
+ * -2 语法分析出错
+ * -1 词法分析出错
+ * 0 没有使用
+ * 1 这一步使用移进
+ * 2 这一步使用规约
+ * 3 分析成功
+ */
 struct snapshot {
     action_unit au;
     word token;
@@ -95,7 +103,7 @@ private:
 public:
     /* initialize 函数: 初始化语法
      */
-    void initialize(string gra_dir = "../TestFile/Grammar.txt", string src_dir = "../TestFile/example.cmm");
+    bool initialize(string gra_dir, string src_dir);
 
     /* generateItems 函数: 将产生式转换为项目
      */

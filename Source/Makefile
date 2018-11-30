@@ -20,8 +20,8 @@ ifeq ($(OS), Windows_NT)
 endif
 
 
-$(TARGET) : $(DYLIB) main.o
-	$(CXX) -o $(TARGET) $(DYLIB) main.o
+# $(TARGET) : $(DYLIB) main.o
+# 	$(CXX) -o $(TARGET) $(DYLIB) main.o
 
 $(DYLIB) : $(OBJS)
 	$(CXX) -o $(DYLIB) -shared $(OBJS)
@@ -31,6 +31,6 @@ $(DYLIB) : $(OBJS)
 
 clean :
 	-rm -f $(OBJS)
-	-rm -f main.o
+	# -rm -f main.o
 	-rm -f $(TARGET)
 	-rm -f $(DYLIB)

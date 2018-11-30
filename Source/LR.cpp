@@ -29,8 +29,11 @@ using namespace std;
 /* initialize 函数: 初始化语法
  */
 //TODO 暂时约定起始变元一定要是 S', 一定以 # 结尾
-void LR::initialize(string gra_dir, string src_dir) {
-    G.analyzeGrammar(gra_dir);
+bool LR::initialize(string gra_dir, string src_dir) {
+    if(!G.analyzeGrammar(gra_dir)) {
+        cerr << "FAILED TO OPEN GRAMMAR FILE" << endl;
+        return false;
+    }
     G.setStartArgument("S'");
     G.setEndTerminal("#", 0);
 
@@ -38,10 +41,12 @@ void LR::initialize(string gra_dir, string src_dir) {
         //cout << "OPEN SOURCE FILE OK" << endl;
     } else {
         cerr << "FAILED TO OPEN SOURCE FILE" << endl;
+        return false;
     }
 
     state_stack.push_back(0);
     last_token = T.readNextWord();
+    return true;
 }
 
 /* generateItems 函数: 将产生式转换为项目
@@ -717,9 +722,6 @@ snapshot LR::getNext() {
         last_token = T.readNextWord();
     }
 
-    //确定此时的栈的情况
-    ss.state_stack = state_stack;
-    ss.symbol_stack = symbol_stack;
     ss.token = last_token;
 
     //如若词法分析出错
@@ -739,10 +741,11 @@ snapshot LR::getNext() {
 
     if(au.first == "") {
         ss.error = -2; //出错
-        return ss;
     } else if(au.first == "s") {
         symbol_stack.push_front(now_symbol);
         state_stack.push_front(au.second);
+        ss.state_stack = state_stack;
+        ss.symbol_stack = symbol_stack;
         last_token = T.readNextWord();
         ss.error = 1;
     } else if(au.first == "r") {
@@ -767,15 +770,17 @@ snapshot LR::getNext() {
         state_stack.push_front(GOTO[state_top][now_production.left]);
 
         ss.error = 2;
-        return ss;
     } else if(au.first == "acc") {
         ss.error = 3;
-        return ss;
     } else {
+        //实际不会执行 else 中的代码
         ss.error = -4;
         cout << "\nEXCEPT: " << ss.au.first << endl;
     }
 
-    
+    //确定此时的栈的情况
+    ss.state_stack = state_stack;
+    ss.symbol_stack = symbol_stack;
+
     return ss;
 }

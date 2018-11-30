@@ -10,13 +10,11 @@
 
 using namespace std;
 
-int main(int argc, char *argv[]) {
+int main() {
     LR L;
 
-    if(argc <= 2) {
-        L.initialize("../TestFile/Grammar.txt");
-    } else {
-        L.initialize(argv[1], argv[2]);
+    if(!L.initialize("../TestFile/Grammar.txt", "../TestFile/example.cmm")) {
+        return -1;
     }
 
     L.generateItems(); //拆分产生式为项目
@@ -49,7 +47,13 @@ int main(int argc, char *argv[]) {
         }
         cout << ss.token.value << endl;
         cout << ss.symbol.name << endl;
-        cout << ss.production << endl;
+
+        if(ss.production.right.size() == 1 && ss.production.right[0] == "ε") {
+            cout << ss.production.left.name << " -> epsilon" << endl;
+        } else {
+            cout << ss.production << endl;
+        }
+
         cout << ss.error << endl;
 
         for(it_s = ss.symbol_stack.begin(); it_s != ss.symbol_stack.end(); it_s++) {
