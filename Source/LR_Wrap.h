@@ -117,4 +117,8 @@ extern "C" {
      * 没有添加额外的检查，所以调用前一定要保证已经进行过初始化操作
      */
     js_snapshot getNext();
+
+    /* 在命令行中测试语法分析
+     */
+    void test_analyze();
 }

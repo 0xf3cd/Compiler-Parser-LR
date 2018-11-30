@@ -15,12 +15,24 @@
 #include "Symbol.h"
 #endif
 
+#include <vector>
+#include <list>
+#include <string>
+
 using namespace std;
 
 LR *L = nullptr;
 bool initialized = false;
 char *grammar_dir = nullptr;
 char *source_dir = nullptr;
+snapshot ss;
+string au_string;
+string w_value;
+Symbol ss_symbol;
+Symbol ss_prod_left;
+string mvs_origin;
+string mls_origin;
+string mli_origin;
 
 /* 私有函数开始 */
 /* 将 vector<Symbol> 转换为 string，再转换为 char*
@@ -32,7 +44,8 @@ char *modifyVectorSymbol(vector<Symbol> &v) {
         origin += it -> name;
         origin += ' ';
     }
-    return _strdup(origin.c_str());
+    mvs_origin = origin;
+    return (char *)(mvs_origin.c_str());
 }
 
 /* 将 list<Symbol> 转换为 string，再转换为 char*
@@ -44,7 +57,8 @@ char *modifyListSymbol(list<Symbol> &l) {
         origin += it -> name;
         origin += ' ';
     }
-    return _strdup(origin.c_str());
+    mls_origin = origin;
+    return (char *)(mls_origin.c_str());
 }
 
 /* 将 list<int> 转换为 string，再转换为 char*
@@ -56,14 +70,16 @@ char *modifyListInt(list<int> &l) {
         origin += to_string(*it);
         origin += ' ';
     }
-    return _strdup(origin.c_str());
+    mli_origin = origin;
+    return (char *)(mli_origin.c_str());
 }
 
 /* 将 word 转换为 js_word 形式
  */
 js_word modifyWord(word w) {
     js_word jw;
-    jw.value = _strdup((w.value).c_str()); // string -> char *
+    w_value = w.value;
+    jw.value = (char *)((w_value).c_str()); // string -> char *
     jw.type = w.type;
     jw.line_num = w.line_num;
     jw.start_char_num = w.start_char_num;
@@ -77,12 +93,15 @@ js_word modifyWord(word w) {
 js_snapshot modifySnapshot(snapshot ss) {
     js_snapshot jss;
 
-    string au_string = ss.au.first + to_string(ss.au.second);
-    jss.au = _strdup(au_string.c_str()); // au -> char*
+    ss_symbol = ss.symbol;
+    ss_prod_left = ss.production.left;
+    
+    au_string = ss.au.first + to_string(ss.au.second);
+    jss.au = (char *)(au_string.c_str()); // au -> char*
     jss.token = modifyWord(ss.token);
-    jss.symbol_name = _strdup(ss.symbol.name.c_str()); // string -> char*
+    jss.symbol_name = (char *)(ss_symbol.name.c_str()); // string -> char*
     jss.symbol_no = ss.symbol.no;
-    jss.production_left = _strdup(ss.production.left.name.c_str()); // string -> char*
+    jss.production_left = (char *)(ss_prod_left.name.c_str()); // string -> char*
     jss.production_right = modifyVectorSymbol(ss.production.right);
     jss.error = ss.error;
     jss.symbol_stack = modifyListSymbol(ss.symbol_stack);
@@ -174,7 +193,25 @@ int isSLR1() {
  * 没有添加额外的检查，所以调用前一定要保证已经进行过初始化操作
  */
 js_snapshot getNext() {
-    snapshot ss = L -> getNext();
+    ss = L -> getNext();
+    js_snapshot jss = modifySnapshot(ss);
+    
+    return jss;
+}
 
-    return modifySnapshot(ss);
+/* 在命令行中测试语法分析
+ */
+void analyze() {
+    snapshot ss;
+
+    while(true) {
+        ss = L -> getNext();
+        cout << ss.au.first << ss.au.second << endl;
+        cout << ss.error << endl;
+        cout << endl;
+
+        if(ss.error < 0 || ss.error == 3) {
+            break;
+        }
+    }
 }

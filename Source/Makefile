@@ -5,7 +5,8 @@ OBJS = FileReader.o \
 	   Item.o \
 	   Tokenizer.o \
 	   Grammar.o \
-	   LR.o
+	   LR.o \
+	   LR_Wrap.o
 
 ifeq ($(OSNAME), Darwin)
 	CXX = clang++
@@ -14,14 +15,16 @@ ifeq ($(OSNAME), Darwin)
 endif
 
 ifeq ($(OS), Windows_NT)
-	CXX = g++
+	CXX = g++ #64bits
 	DYLIB = LR.dll
 	TARGET = test.exe
 endif
 
+$(TARGET) : $(DYLIB) main.o
+	$(CXX) -o $(TARGET) $(DYLIB) main.o
 
-# $(TARGET) : $(DYLIB) main.o
-# 	$(CXX) -o $(TARGET) $(DYLIB) main.o
+main.o : main.cpp
+	$(CXX) -c -o main.o main.cpp
 
 $(DYLIB) : $(OBJS)
 	$(CXX) -o $(DYLIB) -shared $(OBJS)
@@ -31,6 +34,6 @@ $(DYLIB) : $(OBJS)
 
 clean :
 	-rm -f $(OBJS)
-	# -rm -f main.o
+	-rm -f main.o
 	-rm -f $(TARGET)
 	-rm -f $(DYLIB)

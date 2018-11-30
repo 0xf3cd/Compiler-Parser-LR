@@ -1,82 +1,41 @@
-#ifndef GRAMMAR
-#define GRAMMAR
-#include "Grammar.h"
-#endif
+#include "LR_Wrap.h"
 
 #ifndef LR_
 #define LR_
 #include "LR.h"
 #endif
 
+#include <iostream>
+
 using namespace std;
 
 int main() {
-    LR L;
+    string gra = "../TestFile/Grammar.txt";
+    string src = "../TestFile/example.cmm";
+    setGrammar((char *)(gra.c_str()));
+    setSource((char *)(src.c_str()));
+    cout << initialize() << endl;
+    cout << isInitialized() << endl;
+    cout << isLR0() << endl;
+    cout << isSLR1() << endl;
 
-    if(!L.initialize("../TestFile/Grammar.txt", "../TestFile/example.cmm")) {
-        return -1;
-    }
-
-    L.generateItems(); //拆分产生式为项目
-    L.generateAllClosure(); //生成闭包及 GO(I, X)
-
-    if(L.isLR0()) {
-        cout << "IS LR(O)" <<endl;
-    } else {
-        cout << "IS NOT LR(0)" <<endl;
-    }
-    if(L.isSLR1()) {
-        cout << "IS SLR(1)" <<endl;
-    } else {
-        cout << "IS NOT SLR(1)" <<endl;
-    }
-    cout << endl;
-
-    L.generateSLR1ACTION();
-    L.generateGOTO();
-
-    snapshot ss;
-    list<Symbol>::iterator it_s;
-    list<int>::iterator it_i;
+    cout << endl << "analyze begin" << endl;
+    //analyze();
     while(true) {
-        ss = L.getNext();
-        if(ss.au.first == "acc") {
-            cout << ss.au.first << endl;
-        } else {
-            cout << ss.au.first << ss.au.second << endl;
-        }
-        cout << ss.token.value << endl;
-        cout << ss.symbol.name << endl;
+        js_snapshot jss = getNext();
 
-        if(ss.production.right.size() == 1 && ss.production.right[0] == "ε") {
-            cout << ss.production.left.name << " -> epsilon" << endl;
-        } else {
-            cout << ss.production << endl;
-        }
-
-        cout << ss.error << endl;
-
-        for(it_s = ss.symbol_stack.begin(); it_s != ss.symbol_stack.end(); it_s++) {
-            cout << it_s -> name << ' ';
-        }
+        cout << jss.au << endl;
+        cout << jss.token.value << endl;
+        cout << jss.symbol_name << endl;
+        cout << jss.production_left << " -> " << jss.production_right << endl;
+        cout << jss.error << endl;
+        cout << jss.symbol_stack << endl;
+        cout << jss.state_stack << endl;
         cout << endl;
 
-        for(it_i = ss.state_stack.begin(); it_i != ss.state_stack.end(); it_i++) {
-            cout << *it_i << ' ';
-        }
-        cout << endl;
-
-        cout << endl;
-
-        if(ss.error == 3) {
-            cout << "success" << endl;
-            break;
-        }
-        if(ss.error < 0) {
-            cout << "wrong" << endl;
+        if(jss.error < 0 || jss.error == 3) {
             break;
         }
     }
-    
     return 0;
 }
