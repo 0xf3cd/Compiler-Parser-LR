@@ -201,12 +201,14 @@ js_snapshot getNext() {
 
 /* 在命令行中测试语法分析
  */
-void analyze() {
+void test_analyze() {
     snapshot ss;
 
     while(true) {
         ss = L -> getNext();
         cout << ss.au.first << ss.au.second << endl;
+        cout << ss.token.value << endl;
+        cout << ss.production << endl;
         cout << ss.error << endl;
         cout << endl;
 
