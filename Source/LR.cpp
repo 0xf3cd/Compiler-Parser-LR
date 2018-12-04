@@ -701,10 +701,12 @@ void LR::showEncodedProduction() {
  */
 Symbol LR::translate(word token) {
     Symbol s;
-    if(token.type == 7) { //ID
+    if(token.type == 8) { //ID
         s.name = "ID";
-    } else if(token.type == 8) { //num
-        s.name = "num";
+    } else if(token.type == 9) { //num
+        s.name = "inum";
+    } else if(token.type == 10) { //num
+        s.name = "fnum";
     } else {
         s.name = token.value;
     }
@@ -718,7 +720,7 @@ snapshot LR::getNext() {
     Production now_production; //对应的产生式
 
     //跳过注释符号
-    while(last_token.type >= 26) {
+    while(last_token.type >= 28) {
         last_token = T.readNextWord();
     }
 

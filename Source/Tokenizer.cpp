@@ -188,46 +188,46 @@ word Tokenizer::readNextWord() {
 		token.type = 0;
 	} else if(ch == '(') { // (
 		token.value += ch;
-		token.type = 22;
+		token.type = 24;
 	} else if(ch == ')') { // )
 		token.value += ch;
-		token.type = 23;
+		token.type = 25;
 	} else if(ch == '{') { // {
 		token.value += ch;
-		token.type = 24;
+		token.type = 26;
 	} else if(ch == '}') { // }
 		token.value += ch;
-		token.type = 25;
+		token.type = 27;
 	} else if(ch == '+') { // +
 		token.value += ch;
-		token.type = 10;
+		token.type = 12;
 	} else if(ch == '-') { // -
 		token.value += ch;
-		token.type = 11;
+		token.type = 13;
 	} else if(ch == ';') { // ;
 		token.value += ch;
-		token.type = 20;
+		token.type = 22;
 	} else if(ch == ',') { // ,
 		token.value += ch;
-		token.type = 21;
+		token.type = 23;
 	} else if(ch == '/') { // / or /* or //
 		token.value += ch;
 
 		if(hasLineEnd()) { //读到了某一行的结束
-			token.type = 13; //即为除号
+			token.type = 15; //即为除号
 		}
 
 		ch = readNextChar();
 		if(ch == '/') { //单行注释
 			token.value += ch;
-			token.type = 26;
+			token.type = 28;
 
 			while(!hasLineEnd()) { //读取完这一行所有字符，直至下一行非注释字符前停下
 				readNextChar(); 
 			}
 		} else if(ch == '*') { //多行注释
 			token.value += ch;
-			token.type = 27;
+			token.type = 29;
 
 			while(true) { //读取至 "*/" 前面停下
 				ch = readNextChar();
@@ -247,59 +247,44 @@ word Tokenizer::readNextWord() {
 				}
 			}
 		} else {
-			token.type = 13; //即为除号
+			token.type = 15; //即为除号
 			pushBackChar();
 		}
 	} else if(ch == '*') { // * or */
 		token.value += ch;
 
 		if(hasLineEnd()) { //读到了某一行的结束
-			token.type = 12; //即为乘号
+			token.type = 14; //即为乘号
 		}
 
 		ch = readNextChar();
 		if(ch == '/') {
 			token.value += ch;
-			token.type = 28;
+			token.type = 30;
 		} else {
-			token.type = 12; //即为乘号
+			token.type = 14; //即为乘号
 			pushBackChar();
 		}
 	} else if(ch == '=') { // = or ==
 		token.value += ch;
 
 		if(hasLineEnd()) { //读到了某一行的结束
-			token.type = 9; //即为等号
+			token.type = 11; //即为等号
 		}
 
 		ch = readNextChar();
 		if(ch == '=') {
 			token.value += ch;
-			token.type = 14;
+			token.type = 16;
 		} else {
-			token.type = 9; //即为等号
+			token.type = 11; //即为等号
 			pushBackChar();
 		}
 	} else if(ch == '<') { // < or <=
 		token.value += ch;
 
 		if(hasLineEnd()) { //读到了某一行的结束
-			token.type = 16; //即为小于号
-		}
-
-		ch = readNextChar();
-		if(ch == '=') {
-			token.value += ch;
-			token.type = 17;
-		} else {
-			token.type = 16; //即为小于号
-			pushBackChar();
-		}
-	} else if(ch == '>') { // > or >=
-		token.value += ch;
-
-		if(hasLineEnd()) { //读到了某一行的结束
-			token.type = 18; //即为大于号
+			token.type = 18; //即为小于号
 		}
 
 		ch = readNextChar();
@@ -307,7 +292,22 @@ word Tokenizer::readNextWord() {
 			token.value += ch;
 			token.type = 19;
 		} else {
-			token.type = 18; //即为大于号
+			token.type = 18; //即为小于号
+			pushBackChar();
+		}
+	} else if(ch == '>') { // > or >=
+		token.value += ch;
+
+		if(hasLineEnd()) { //读到了某一行的结束
+			token.type = 20; //即为大于号
+		}
+
+		ch = readNextChar();
+		if(ch == '=') {
+			token.value += ch;
+			token.type = 21;
+		} else {
+			token.type = 20; //即为大于号
 			pushBackChar();
 		}
 	} else if(ch == '!') { // !=
@@ -321,40 +321,69 @@ word Tokenizer::readNextWord() {
 		ch = readNextChar();
 		if(ch == '=') {
 			token.value += ch;
-			token.type = 15;
+			token.type = 17;
 		} else {
 			has_mistake = true;
 			token.type = -3; //出错
 			pushBackChar();
 		}	
-	} else if(isDigit(ch)) { // 数
-		token.value += ch;
-		while(true) {
-			if(hasLineEnd()) { //读到了某一行的结束
-				token.type = 8; //即为数
-				break;
-			}
+	} else if(isDigit(ch) || ch == '.') { // 数
+		int dot_count = 0;
+		if(ch == '.') {
+			dot_count += 1;
+		}
 
-			ch = readNextChar();
-			if(isDigit(ch)) {
-				token.value += ch;
-			} else if(isLetter(ch)) {
-				token.value += ch;
-				has_mistake = true;
-				token.type = -3; //数字后紧接字母，出错
-				pushBackChar();
-				break;
-			} else {
-				token.type = 8;
-				pushBackChar();
-				break;
+		token.value += ch;
+		if(ch == '.' && hasLineEnd()) { //读到了某一行的结束
+			has_mistake = true;
+			token.type = -3; //出错
+			pushBackChar();
+		} else {
+			while(true) {
+				if(hasLineEnd()) { //读到了某一行的结束
+					if(dot_count == 0) {
+						token.type = 9; //即为整数
+					} else {
+						token.type = 10; //即为浮点数
+					}
+					break;
+				}
+
+				ch = readNextChar();
+				if(isDigit(ch)) {
+					token.value += ch;
+				} else if(ch == '.') {
+					if(dot_count > 0) {
+						has_mistake = true;
+						token.type = -3; //数字后紧接字母，出错
+						pushBackChar();
+						break;
+					} else {
+						dot_count += 1;
+						token.value += ch;
+					}
+				} else if(isLetter(ch)) {
+					token.value += ch;
+					has_mistake = true;
+					token.type = -3; //数字后紧接字母，出错
+					pushBackChar();
+					break;
+				} else {
+					if(dot_count == 0) {
+						token.type = 9; //即为整数
+					} else {
+						token.type = 10; //即为浮点数
+					}
+					pushBackChar();
+					break;
+				}
 			}
 		}
 	} else if(isLetter(ch)) {
 		token.value += ch;
 		while(true) {
 			if(hasLineEnd()) { //读到了某一行的结束
-				token.type = 29; //即为 ID 或 keywords
+				token.type = 31; //即为 ID 或 keywords
 				break;
 			}
 
@@ -362,7 +391,7 @@ word Tokenizer::readNextWord() {
 			if(isDigit(ch) || isLetter(ch)) {
 				token.value += ch;
 			} else {
-				token.type = 29;
+				token.type = 31;
 				pushBackChar();
 				break;
 			}
@@ -372,14 +401,15 @@ word Tokenizer::readNextWord() {
 		token.type = -5; //出现不合法字符
 	}
 
-	if(token.type == 29) {
+	if(token.type == 31) {
 		if(token.value == "int") { token.type = 1; } 
-		else if(token.value == "void") { token.type = 2; } 
-		else if(token.value == "if") { token.type = 3; } 
-		else if(token.value == "else") { token.type = 4; } 
-		else if(token.value == "while") { token.type = 5; } 
-		else if(token.value == "return") { token.type = 6; } 
-		else { token.type = 7; }
+		else if(token.value == "float") { token.type = 2;}
+		else if(token.value == "void") { token.type = 3; } 
+		else if(token.value == "if") { token.type = 4; } 
+		else if(token.value == "else") { token.type = 5; } 
+		else if(token.value == "while") { token.type = 6; } 
+		else if(token.value == "return") { token.type = 7; } 
+		else { token.type = 8; }
 	}
 
 	
