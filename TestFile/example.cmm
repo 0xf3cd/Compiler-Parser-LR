@@ -39,6 +39,7 @@ void main(void) {
 	int a;
 	int b;
 	int c;
+	int as_Ds;
 	a = 3;
 	b = 4;
 	c = 2;

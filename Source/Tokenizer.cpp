@@ -379,7 +379,7 @@ word Tokenizer::readNextWord() {
 				}
 			}
 		}
-	} else if(isLetter(ch)) {
+	} else if(isLetter(ch) || ch == '_') {
 		token.value += ch;
 		while(true) {
 			if(hasLineEnd()) { //读到了某一行的结束
@@ -388,7 +388,7 @@ word Tokenizer::readNextWord() {
 			}
 
 			ch = readNextChar();
-			if(isDigit(ch) || isLetter(ch)) {
+			if(isDigit(ch) || isLetter(ch) || ch == '_') {
 				token.value += ch;
 			} else {
 				token.type = 31;
